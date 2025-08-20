@@ -1,0 +1,10 @@
+[project]
+name = "archicad-fastmcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "archicad>=28.3000",
+    "fastmcp>=2.11.3",
+]
