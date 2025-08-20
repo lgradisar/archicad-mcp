@@ -17,6 +17,7 @@ This package also depends on two Tapir files that define the JSON command struct
 
 These files are located under the `src/mcp_server/tapir` folder.  
 If you encounter mismatched commands, update the files directly from the Tapir repository.
+These files can also be sourced directly from the Tapir repo, but may cause mismatches if not updated in sync with the add-on.
 
 
 ### FastMCP Server
@@ -25,8 +26,8 @@ If you encounter mismatched commands, update the files directly from the Tapir r
 
 Clone the repository
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/lgradisar/archicad-mcp.git
+cd archicad-mcp
 ```
 
 To set up the project and its virtual environment, simply run:
