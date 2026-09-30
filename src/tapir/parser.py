@@ -1,61 +1,72 @@
 import json
+import re
 from pathlib import Path
 
-def load_json_file(filename, var_name=None):
-    file_path = Path(__file__).with_name(filename)
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = f.read()
-
-    if var_name:
-        data = data.replace(f"var {var_name} = ", "").rstrip("; \n")
-
-    return json.loads(data)
+HERE = Path(__file__).parent
+UNROLL_DEPTH = 2
 
 
-def resolve_ref(schema, definitions, seen=None):
+def load_js(filename):
+    text = (HERE / filename).read_text(encoding="utf-8-sig")
+    text = re.sub(r"^\s*var \w+ = ", "", text).strip().removesuffix(";")
+    return json.loads(text)
+
+
+def tapir_version():
+    return (HERE / "TAPIR_VERSION").read_text().strip()
+
+
+# Schema handling
+
+def inline(node, defs, stack=()):
+    """Replace every "#/Name" reference with the definition itself.
+
+    A local description next to a $ref wins over the definition's one.
+    Recursive definitions are unrolled UNROLL_DEPTH times, then left as a plain object.
     """
-    Recursively resolve $ref entries like "#/Elements" using common schema definitions.
-    """
-    if seen is None:
-        seen = set()
-
-    if isinstance(schema, dict):
-        if "$ref" in schema:
-            ref = schema["$ref"]
-            if ref.startswith("#/"):
-                key = ref[2:]
-                if key in seen:  # cycle detected
-                    return definitions[key]
-                seen.add(key)
-                return resolve_ref(definitions[key], definitions, seen)
-        return {k: resolve_ref(v, definitions, seen) for k, v in schema.items()}
-
-    elif isinstance(schema, list):
-        return [resolve_ref(item, definitions, seen) for item in schema]
-
-    return schema
+    if isinstance(node, list):
+        return [inline(item, defs, stack) for item in node]
+    if not isinstance(node, dict):
+        return node
+    if "$ref" in node:
+        name = node["$ref"].removeprefix("#/")
+        if stack.count(name) >= UNROLL_DEPTH:
+            return {"type": "object", "description": defs[name].get("description", name)}
+        merged = {**defs[name], **{key: value for key, value in node.items() if key != "$ref"}}
+        return inline(merged, defs, stack + (name,))
+    return {key: inline(value, defs, stack) for key, value in node.items()}
 
 
+def flatten_root_union(schema):
+    """Tool schemas must be a plain object at the root; merge a root oneOf/anyOf into one."""
+    branches = schema.get("oneOf") or schema.get("anyOf")
+    if not branches:
+        return schema
+    properties = {}
+    options = []
+    for branch in branches:
+        properties.update(branch.get("properties", {}))
+        options.append("(" + ", ".join(branch.get("required", [])) + ")")
+    description = f"{schema.get('description', '')} Provide exactly one of: {' or '.join(options)}.".strip()
+    return {"type": "object", "description": description, "properties": properties, "additionalProperties": False}
+
+
+def tool_schema(input_scheme, defs):
+    if input_scheme is None:
+        return {"type": "object", "properties": {}, "additionalProperties": False}
+    return flatten_root_union(inline(input_scheme, defs))
 
 
 def tapir_commands():
-    gCommands = load_json_file("command_definitions.js", var_name="gCommands")
-    gSchemaDefinitions = load_json_file("common_schema_definitions.js", var_name="gSchemaDefinitions")
-
-
-    parsed_commands = []
-
-    for group in gCommands:
-        tag = group["name"]
+    defs = load_js("common_schema_definitions.js")
+    commands = []
+    for group in load_js("command_definitions.js"):
         for cmd in group["commands"]:
-            in_schema = cmd.get("inputScheme")
-            in_resolved  = resolve_ref(in_schema, gSchemaDefinitions)  if in_schema  is not None else None
-            
-            parsed_commands.append({
+            commands.append({
                 "name": cmd["name"],
-                "tag": tag,
+                "group": group["name"].removesuffix(" Commands").lower().replace(" ", "-"),
+                "version": cmd["version"],
                 "description": cmd["description"],
-                "input_schema": in_resolved
+                "schema": tool_schema(cmd.get("inputScheme"), defs),
             })
-
-    return parsed_commands
+    return commands
