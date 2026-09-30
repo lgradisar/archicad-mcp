@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPO = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation"
 FILES = ["command_definitions.js", "common_schema_definitions.js"]
-TARGET = Path(__file__).resolve().parents[1] / "src" / "tapir"
+TARGET = Path(__file__).resolve().parents[1] / "src" / "archicad_mcp" / "tapir"
 
 
 def main(tag):
@@ -18,8 +18,7 @@ def main(tag):
             (TARGET / name).write_bytes(response.read())
     (TARGET / "TAPIR_VERSION").write_text(tag + "\n", newline="\n")
 
-    sys.path.insert(0, str(TARGET.parent))
-    from tapir import COMMANDS
+    from archicad_mcp.tapir import COMMANDS
     print(f"Tapir {tag}: {len(COMMANDS)} commands ready")
 
 

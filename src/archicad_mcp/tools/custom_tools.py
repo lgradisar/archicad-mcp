@@ -2,7 +2,7 @@ import anyio
 from fastmcp.tools import Tool
 from mcp.types import ToolAnnotations
 
-from tapir import client, parser
+from archicad_mcp.tapir import client, parser
 
 
 def connection_info():

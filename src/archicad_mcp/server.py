@@ -2,7 +2,7 @@ import os
 
 from fastmcp import FastMCP
 
-from tools import custom_tools, register_tapir
+from archicad_mcp.tools import custom_tools, register_tapir
 
 
 def hidden_tools(tools, env):
@@ -30,5 +30,9 @@ def create_server(env=os.environ):
     return mcp
 
 
-if __name__ == "__main__":
+def main():
     create_server().run(show_banner=False)
+
+
+if __name__ == "__main__":
+    main()

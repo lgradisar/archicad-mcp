@@ -69,7 +69,7 @@ wheels = [
 [[package]]
 name = "archicad-mcp"
 version = "0.2.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
     { name = "jsonschema" },

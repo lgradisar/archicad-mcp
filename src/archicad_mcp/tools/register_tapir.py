@@ -5,13 +5,13 @@ import jsonschema
 from fastmcp.exceptions import ToolError
 from fastmcp.tools import Tool, ToolResult
 
-from tapir import COMMANDS, client
-from tools import classification
+from archicad_mcp.tapir import COMMANDS, client
+from archicad_mcp.tools import classification
 
 
 def to_result(response):
     structured = response if isinstance(response, dict) else None
-    return ToolResult(content=json.dumps(response), structured_content=structured)
+    return ToolResult(content=json.dumps(response, ensure_ascii=False), structured_content=structured)
 
 
 class TapirTool(Tool):
