@@ -1,3 +1,5 @@
+import re
+
 from mcp.types import ToolAnnotations
 
 NOT_READ_ONLY = {"GetScriptUIResult", "GetPointFromUser"}
@@ -51,4 +53,5 @@ def description(name, text):
         text += SLOW_NOTE
     if name in INTERACTIVE:
         text += INTERACTIVE_NOTE
-    return text
+    words = " ".join(re.findall(r"[A-Z][a-z]+|[A-Z]+(?![a-z])|\d+", name)).lower()
+    return f"{text} Keywords: {words}."

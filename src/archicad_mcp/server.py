@@ -1,6 +1,7 @@
 import os
 
 from fastmcp import FastMCP
+from fastmcp.server.transforms.search import BM25SearchTransform
 
 from archicad_mcp.tools import custom_tools, register_tapir
 
@@ -27,6 +28,8 @@ def create_server(env=os.environ):
     hidden = hidden_tools(tools, env)
     if hidden:
         mcp.disable(names=hidden)
+    if env.get("ARCHICAD_MCP_SEARCH", "1").strip() != "0":
+        mcp.add_transform(BM25SearchTransform(always_visible=["TestConnection"]))
     return mcp
 
 

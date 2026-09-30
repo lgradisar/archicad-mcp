@@ -85,6 +85,7 @@ Settings are optional. They go into an `"env"` block in the config entry:
 
 | Setting | Default | What it does |
 |---|---|---|
+| `ARCHICAD_MCP_SEARCH` | `1` | `1`: Claude sees three tools, `TestConnection`, `search_tools` and `call_tool`, and finds the Tapir tools by searching. Keeps the conversation small. `0`: Claude sees every tool directly. |
 | `ARCHICAD_MCP_MODE` | `all` | `all`: every tool. `safe`: hides the dangerous tools (see Safety). `readonly`: only tools that read the project. |
 | `ARCHICAD_MCP_GROUPS` | all groups | Only show tools from these groups, separated by commas, for example `project,element`. |
 | `ARCHICAD_PORT` | automatic | Port of the Archicad JSON API. Set it when more than one Archicad is open. |
@@ -96,13 +97,13 @@ Restart Claude Desktop after changing settings. If the tool list does not change
 
 ## Tools
 
-- **250 Tapir commands**, one tool each. See the [Tapir command list](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon/).
+- **250 Tapir commands**, one tool each. See the [Tapir command list](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon/). By default Claude finds them with `search_tools` and runs them with `call_tool`, so the full list never enters the conversation.
 - **TestConnection**: reports the port, the Archicad version and the Tapir version.
 - **RunTapirCommand**: runs any Tapir command by name. Useful when your Tapir is newer than the definitions shipped here. Only shown in `all` mode with no groups set.
 
 ## Safety
 
-- With everything on, Claude sees 252 tools. That is a lot of text for every conversation. Claude Desktop users should set `ARCHICAD_MCP_GROUPS` or use `readonly` mode.
+- With `ARCHICAD_MCP_SEARCH=0`, Claude sees 252 tools. That is a lot of text for every conversation in Claude Desktop. Combine it with `ARCHICAD_MCP_GROUPS` or `readonly` mode, or leave search on.
 - Some tools can do real damage: quit Archicad, open, close and save projects, delete things, send to Teamwork, publish, print, write files, change libraries, or show dialogs that block Archicad until someone clicks. `ARCHICAD_MCP_MODE=safe` hides all of them, plus `RunTapirCommand`.
 - Claude Desktop asks before each tool runs. Approve tools one by one instead of allowing everything.
 - Arguments are checked against the Tapir definitions before they are sent. Archicad checks them again.
